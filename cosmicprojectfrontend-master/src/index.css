@@ -1,0 +1,411 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 21% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 21% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 21% 17%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-50: 217 100% 97%;
+    --primary-100: 217 96% 91%;
+    --primary-200: 217 87% 81%;
+    --primary-300: 217 85% 69%;
+    --primary-400: 217 91% 60%;
+    --primary-500: 217 91% 60%;
+    --primary-600: 217 84% 53%;
+    --primary-700: 217 80% 45%;
+    --primary-800: 217 82% 37%;
+    --primary-900: 217 89% 30%;
+
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 224 21% 17%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 224 21% 17%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --pending: 43 96% 56%;
+    --pending-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 224 21% 17%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 16% 24%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 224 16% 24%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
+    --background: 224 21% 8%;
+    --foreground: 220 14% 96%;
+
+    --card: 224 21% 10%;
+    --card-foreground: 220 14% 96%;
+
+    --popover: 224 21% 10%;
+    --popover-foreground: 220 14% 96%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-50: 217 89% 30%;
+    --primary-100: 217 82% 37%;
+    --primary-200: 217 80% 45%;
+    --primary-300: 217 84% 53%;
+    --primary-400: 217 91% 60%;
+    --primary-500: 217 91% 60%;
+    --primary-600: 217 85% 69%;
+    --primary-700: 217 87% 81%;
+    --primary-800: 217 96% 91%;
+    --primary-900: 217 100% 97%;
+
+    --secondary: 224 16% 24%;
+    --secondary-foreground: 220 14% 96%;
+
+    --muted: 224 16% 17%;
+    --muted-foreground: 220 9% 60%;
+
+    --accent: 224 16% 17%;
+    --accent-foreground: 220 14% 96%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --pending: 43 96% 56%;
+    --pending-foreground: 0 0% 100%;
+
+    --border: 224 16% 17%;
+    --input: 224 16% 17%;
+    --ring: 217 91% 60%;
+
+    --sidebar-background: 224 21% 6%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 224 16% 14%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 224 16% 14%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Mobile-first responsive utilities */
+  .mobile-container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .mobile-padding {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  .mobile-margin {
+    @apply m-4 sm:m-6 lg:m-8;
+  }
+
+  /* Responsive table styles */
+  .responsive-table {
+    @apply w-full overflow-x-auto;
+  }
+  
+  .responsive-table table {
+    @apply min-w-full divide-y divide-border;
+  }
+  
+  .responsive-table th,
+  .responsive-table td {
+    @apply px-3 py-2 text-sm sm:px-4 sm:py-3 sm:text-base;
+  }
+
+  /* Mobile card styles */
+  .mobile-card {
+    @apply rounded-lg border bg-card p-4 sm:p-6 shadow-sm;
+  }
+
+  /* Mobile form styles */
+  .mobile-form {
+    @apply space-y-4 sm:space-y-6;
+  }
+  
+  .mobile-form-group {
+    @apply space-y-2 sm:space-y-3;
+  }
+
+  /* Mobile grid layouts */
+  .mobile-grid {
+    @apply grid gap-4 sm:gap-6;
+  }
+  
+  .mobile-grid-1 {
+    @apply mobile-grid grid-cols-1;
+  }
+  
+  .mobile-grid-2 {
+    @apply mobile-grid grid-cols-1 sm:grid-cols-2;
+  }
+  
+  .mobile-grid-3 {
+    @apply mobile-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .mobile-grid-4 {
+    @apply mobile-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  /* Mobile button styles */
+  .mobile-button {
+    @apply w-full sm:w-auto;
+  }
+  
+  .mobile-button-group {
+    @apply flex flex-col sm:flex-row gap-2 sm:gap-3;
+  }
+
+  /* Mobile text styles */
+  .mobile-text-sm {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .mobile-text-base {
+    @apply text-sm sm:text-base;
+  }
+  
+  .mobile-text-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .mobile-text-xl {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .mobile-text-2xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .mobile-text-3xl {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  /* Mobile spacing utilities */
+  .mobile-space-y {
+    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+  }
+  
+  .mobile-space-x {
+    @apply space-x-2 sm:space-x-4 lg:space-x-6;
+  }
+
+  /* Mobile sidebar improvements */
+  .mobile-sidebar {
+    @apply fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out;
+  }
+  
+  .mobile-sidebar-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden;
+  }
+
+  /* Mobile navigation improvements */
+  .mobile-nav-item {
+    @apply flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-md transition-colors;
+  }
+  
+  .mobile-nav-item-active {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+  }
+  
+  .mobile-nav-item-inactive {
+    @apply text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
+  }
+
+  /* Mobile header improvements */
+  .mobile-header {
+    @apply h-14 sm:h-16 bg-card border-b border-border flex items-center justify-between px-4 sm:px-6;
+  }
+  
+  .mobile-header-title {
+    @apply text-base sm:text-lg lg:text-xl font-semibold text-foreground;
+  }
+
+  /* Mobile content area */
+  .mobile-content {
+    @apply flex-1 overflow-auto bg-background p-4 sm:p-6 lg:p-8;
+  }
+
+  /* Mobile dialog improvements */
+  .mobile-dialog {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+  
+  .mobile-dialog-content {
+    @apply w-full max-w-md sm:max-w-lg lg:max-w-xl bg-background rounded-lg shadow-lg border;
+  }
+
+  /* Mobile input improvements */
+  .mobile-input {
+    @apply w-full px-3 py-2 text-sm sm:text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
+  /* Mobile select improvements */
+  .mobile-select {
+    @apply w-full px-3 py-2 text-sm sm:text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
+  /* Mobile textarea improvements */
+  .mobile-textarea {
+    @apply w-full px-3 py-2 text-sm sm:text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-vertical;
+  }
+
+  /* Mobile badge improvements */
+  .mobile-badge {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full;
+  }
+
+  /* Mobile avatar improvements */
+  .mobile-avatar {
+    @apply h-8 w-8 sm:h-10 sm:w-10 rounded-full;
+  }
+
+  /* Mobile search improvements */
+  .mobile-search {
+    @apply relative w-full sm:w-64;
+  }
+  
+  .mobile-search-input {
+    @apply w-full pl-10 pr-4 py-2 text-sm sm:text-base border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+  }
+
+  /* Mobile stats card improvements */
+  .mobile-stats-card {
+    @apply p-4 sm:p-6 rounded-lg border bg-card shadow-sm;
+  }
+  
+  .mobile-stats-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* Mobile action buttons */
+  .mobile-action-buttons {
+    @apply flex flex-col sm:flex-row gap-2 sm:gap-3;
+  }
+  
+  .mobile-action-button {
+    @apply flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors;
+  }
+
+  /* Mobile empty state */
+  .mobile-empty-state {
+    @apply text-center py-8 sm:py-12;
+  }
+  
+  .mobile-empty-state-icon {
+    @apply mx-auto h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground;
+  }
+  
+  .mobile-empty-state-title {
+    @apply mt-4 text-lg sm:text-xl font-semibold;
+  }
+  
+  .mobile-empty-state-description {
+    @apply mt-2 text-sm sm:text-base text-muted-foreground;
+  }
+
+  /* Mobile loading states */
+  .mobile-loading {
+    @apply flex items-center justify-center py-8 sm:py-12;
+  }
+  
+  .mobile-loading-spinner {
+    @apply h-8 w-8 sm:h-12 sm:w-12 animate-spin text-primary;
+  }
+
+  /* Mobile error states */
+  .mobile-error {
+    @apply text-center py-8 sm:py-12;
+  }
+  
+  .mobile-error-icon {
+    @apply mx-auto h-12 w-12 sm:h-16 sm:w-16 text-destructive;
+  }
+  
+  .mobile-error-title {
+    @apply mt-4 text-lg sm:text-xl font-semibold text-destructive;
+  }
+  
+  .mobile-error-description {
+    @apply mt-2 text-sm sm:text-base text-muted-foreground;
+  }
+
+  /* Mobile success states */
+  .mobile-success {
+    @apply text-center py-8 sm:py-12;
+  }
+  
+  .mobile-success-icon {
+    @apply mx-auto h-12 w-12 sm:h-16 sm:w-16 text-success;
+  }
+  
+  .mobile-success-title {
+    @apply mt-4 text-lg sm:text-xl font-semibold text-success;
+  }
+  
+  .mobile-success-description {
+    @apply mt-2 text-sm sm:text-base text-muted-foreground;
+  }
+
+  /* Toast notifications - ensure they appear above everything */
+  .react-hot-toast {
+    z-index: 9999 !important;
+  }
+  
+  .react-hot-toast > div {
+    z-index: 9999 !important;
+  }
+}
