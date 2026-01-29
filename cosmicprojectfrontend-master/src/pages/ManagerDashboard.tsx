@@ -483,21 +483,14 @@ const ManagerDashboard = () => {
     }
   };
 
+  // view project
+  const [selectProject, setSelectProject] = useState<any | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const handleViewProject = (projectId: string) => {
     const project = assignedProjects.find((p) => p._id === projectId);
     if (project) {
-      alert(
-        `Project Details:\n\n` +
-        `Name: ${project.siteName}\n` +
-        `Client: ${project.clientName}\n` +
-        `Client Mobile No: ${project.clientMobile}\n` +
-        `Location: ${project.location}\n` +
-        `Status: ${project.status || "Active"}\n` +
-        `Progress: ${project.progress || 0}%\n` +
-        `Deadline: ${project.deadline ? new Date(project.deadline).toLocaleDateString() : "No deadline"}\n\n` +
-        `Description: ${project.description || "No description"}\n` +
-        `Priority: ${project.priority || "Medium"}`,
-      );
+      setSelectProject(project);
+      setIsViewModalOpen(true);
     }
   };
 
@@ -668,6 +661,49 @@ const ManagerDashboard = () => {
           </div>
         </div>
 
+
+        {/* modal for view project in manager dashboard */}
+        <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Project Details</DialogTitle>
+              <DialogDescription>Detailed information about the selected project.</DialogDescription>
+            </DialogHeader>
+            {selectProject && (
+              <div className="space-y-3">
+                <div>
+                  <span className="font-semibold">Site Name:</span> {selectProject.siteName}
+                </div>
+                <div>
+                  <span className="font-semibold">Client Name:</span> {selectProject.clientName}
+                </div>
+                <div>
+                  <span className="font-semibold">Client Mobile No:</span> {selectProject.clientMobile || "N/A"}
+                </div>
+                <div>
+                  <span className="font-semibold">Location:</span> {selectProject.location}
+                </div>
+                <div>
+                  <span className="font-semibold">Status</span> {selectProject.status || "Active"}
+                </div>
+                <div>
+                  <span className="font-semibold">Progress::</span> {selectProject.progress || "0%"}
+                </div>
+
+                <div>
+                  <span className="font-semibold">Deadline:</span> {selectProject.deadline ? new Date(selectProject.deadline).toLocaleDateString() : "No deadline"}
+                </div>
+                <div>
+                  <span className="font-semibold">Description:</span> {selectProject.description}
+                </div>
+                <div>
+                  <span className="font-semibold">Priority:</span> {selectProject.priority}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Stats Cards */}
         <StatsCards stats={stats} />
 
@@ -810,7 +846,7 @@ const ManagerDashboard = () => {
                                     href={`${FILE_BASE_URL}/${file.path.replace(/\\/g, '/')}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 underline hover:text-blue-800"
+                                    className=" underline hover:text-blue-800"
                                   >
                                     {file.originalName || file.filename}
                                   </a>
@@ -1373,10 +1409,10 @@ const ManagerDashboard = () => {
                                     ))}
                                   </ul>
                                 ) : (
-                                  <span className="text-gray-500 text-xs">No attachments</span>
+                                  <span className="text-xs">No attachments</span>
                                 )}
                               </td>
-                              <td className="border-b border-gray-200 py-3 mobile-text-sm text-gray-600">
+                              <td className="border-b border-gray-200 py-3 mobile-text-sm ">
                                 {task.description || '-'}
                               </td>
                             </tr>
@@ -1407,7 +1443,7 @@ const ManagerDashboard = () => {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="mobile-text-base font-medium text-gray-900 truncate">
+                              <h4 className="mobile-text-base font-medium  truncate">
                                 {task.title}
                               </h4>
                               <Badge variant="outline" className="capitalize mobile-text-xs">
@@ -1417,14 +1453,14 @@ const ManagerDashboard = () => {
 
                             <div className="space-y-2">
                               <div>
-                                <span className="mobile-text-xs font-medium text-gray-500">Description:</span>
-                                <p className="mobile-text-sm text-gray-700 mt-1">
+                                <span className="mobile-text-xs font-medium">Description:</span>
+                                <p className="mobile-text-sm mt-1">
                                   {task.description || 'No description available'}
                                 </p>
                               </div>
 
                               <div>
-                                <span className="mobile-text-xs font-medium text-gray-500">Attachments:</span>
+                                <span className="mobile-text-xs font-medium">Attachments:</span>
                                 {(task.files && task.files.length > 0) ? (
                                   <div className="mt-1 space-y-1">
                                     {task.files.map((file, idx) => (
@@ -1441,7 +1477,7 @@ const ManagerDashboard = () => {
                                     ))}
                                   </div>
                                 ) : (
-                                  <p className="mobile-text-xs text-gray-500 mt-1">No attachments</p>
+                                  <p className="mobile-text-xs mt-1">No attachments</p>
                                 )}
                               </div>
                             </div>

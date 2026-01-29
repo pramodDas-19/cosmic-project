@@ -94,17 +94,26 @@ export const NotificationBell: React.FC<{ className?: string }> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-90 max-h-[600px]"
+        className=" w-90 max-h-[400px] sm:w-1000 sm:max-h-[450px]"
         align="end"
         forceMount
       >
-        <div className="flex items-center justify-between p-4">
-          <DropdownMenuLabel className="text-base font-semibold">
+        <div className="
+  flex flex-col gap-3 p-3
+  sm:flex-row sm:items-center sm:justify-between sm:p-4
+">
+          {/* Title */}
+          <DropdownMenuLabel className="text-sm font-semibold sm:text-base">
             Notifications
           </DropdownMenuLabel>
+
           {notifications.length > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 mr-2">
+            <div className="
+      flex flex-wrap gap-2
+      sm:flex-nowrap sm:items-center
+    ">
+              {/* Filter buttons */}
+              <div className="flex items-center gap-1">
                 <Button
                   variant={filter === "all" ? "secondary" : "ghost"}
                   size="sm"
@@ -113,6 +122,7 @@ export const NotificationBell: React.FC<{ className?: string }> = ({
                 >
                   All
                 </Button>
+
                 <Button
                   variant={filter === "unread" ? "secondary" : "ghost"}
                   size="sm"
@@ -122,6 +132,8 @@ export const NotificationBell: React.FC<{ className?: string }> = ({
                   Unread{unreadCount > 0 ? ` (${unreadCount})` : ""}
                 </Button>
               </div>
+
+              {/* Actions */}
               {unreadCount > 0 && (
                 <Button
                   variant="ghost"
@@ -130,9 +142,10 @@ export const NotificationBell: React.FC<{ className?: string }> = ({
                   className="h-6 px-2 text-xs"
                 >
                   <Check className="h-3 w-3 mr-1" />
-                  Mark all read
+                  <span className=" sm:inline">Mark all read</span>
                 </Button>
               )}
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -140,7 +153,7 @@ export const NotificationBell: React.FC<{ className?: string }> = ({
                 className="h-6 px-2 text-xs"
               >
                 <Trash2 className="h-3 w-3 mr-1" />
-                Clear all
+                <span className=" sm:inline">Clear all</span>
               </Button>
             </div>
           )}
@@ -161,7 +174,7 @@ export const NotificationBell: React.FC<{ className?: string }> = ({
             )}
           </div>
         ) : (
-          <ScrollArea className="max-h-[400px]">
+          <ScrollArea className="h-[400px] max-w-[350px] sm:max-w-[600px]">
             <div className="space-y-1">
               {recentNotifications.map((notification) => (
                 <div
@@ -223,16 +236,6 @@ export const NotificationBell: React.FC<{ className?: string }> = ({
           </ScrollArea>
         )}
 
-        {notifications.length > 10 && (
-          <>
-            <DropdownMenuSeparator />
-            <div className="p-2">
-              <Button variant="ghost" className="w-full text-sm">
-                View all notifications
-              </Button>
-            </div>
-          </>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

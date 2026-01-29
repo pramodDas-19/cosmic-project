@@ -43,6 +43,7 @@ import {
   PlayCircle,
   Upload,
   FileText,
+  Phone,
 } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useSocket } from "@/contexts/SocketContext";
@@ -99,7 +100,7 @@ const TechnicianDashboard = () => {
   const [statusComment, setStatusComment] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [delayReason, setDelayReason] = useState("");
-  const [otp,setOtp]=useState("");
+  const [otp, setOtp] = useState("");
 
   // State for tasks - Fetched from backend
   const [allTasks, setAllTasks] = useState<Task[]>([]);
@@ -483,103 +484,111 @@ const TechnicianDashboard = () => {
                   </p>
                 </div>
               ) : (
-                <div className="responsive-table">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr>
-                        <th className="py-2 px-2 bg-muted/50 mobile-text-sm font-medium text-muted-foreground">
-                          Task Title
-                        </th>
-                        <th className="py-2 px-2 bg-muted/50 mobile-text-sm font-medium text-muted-foreground">
-                          Project
-                        </th>
-                        <th className="py-2 px-2 bg-muted/50 mobile-text-sm font-medium text-muted-foreground">
-                          Location
-                        </th>
-                        <th className="py-2 px-2 bg-muted/50 mobile-text-sm font-medium text-muted-foreground">
-                          Priority
-                        </th>
-                        <th className="py-2 px-2 bg-muted/50 mobile-text-sm font-medium text-muted-foreground">
-                          Status
-                        </th>
-                        <th className="py-2 px-2 bg-muted/50 mobile-text-sm font-medium text-muted-foreground">
-                          Deadline
-                        </th>
-                        <th className="py-2 px-2 bg-muted/50 mobile-text-sm font-medium text-muted-foreground">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTasks.map((task) => (
-                        <tr
-                          key={task.id}
-                          className="hover:bg-muted/50 transition-colors"
-                        >
-                          <td className="py-2 px-2 mobile-text-sm text-foreground">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h4 className="font-medium">{task.title}</h4>
+                <div>
+                  <div className="space-y-4">
+                    {filteredTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className=" border rounded-xl p-5 hover:shadow-md transition"
+                      >
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                          {/* LEFT SECTION – PROJECT INFO */}
+                          <div className="flex-1 space-y-3">
+                            {/* Project Name */}
+                            <h3 className="text-lg font-semibold">
+                              {task.title}
+                            </h3>
+
+                            {/* Meta Info */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-muted-foreground">
+
+                              {/* Client */}
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                <span>
+                                  <strong>Project:</strong> {task.project}
+                                </span>
+                              </div>
+                              {/* Location */}
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4" />
+                                <span className="truncate">
+                                  <strong>Location:</strong> {task.location}
+                                </span>
+                              </div>
+                              {/* Deadline */}
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <span>
+                                  <strong>Due:</strong>{" "}
+                                  {task.deadline
+                                    ? new Date(task.deadline).toLocaleDateString()
+                                    : "No deadline"}
+                                </span>
+                              </div>
+
+                              {/* Priority */}
+                              <div className="flex items-center gap-2">
+                                <AlertTriangle className="h-4 w-4" />
+                                <span>
+                                  <strong>Priority:</strong>{" "}
+                                  <Badge
+                                    variant="outline"
+                                    className={getPriorityColor(task.priority)}
+                                  >
+                                    {task.priority.toUpperCase()}
+                                  </Badge>
+                                </span>
+                              </div>
+
+                              {/* Status */}
+                              <div className="flex items-center gap-2">
+                                <ClipboardList className="h-4 w-4" />
+                                <span>
+                                  <strong>Status:</strong>{" "}
+                                  <Badge
+                                    variant="outline"
+                                    className={getStatusColor(task.status)}
+                                  >
+                                    {task.status.replace("_", " ").toUpperCase()}
+                                  </Badge>
+                                </span>
+                              </div>
                             </div>
-                          </td>
-                          <td className="py-2 px-2 mobile-text-sm text-foreground">
-                            {task.project}
-                          </td>
-                          <td className="py-2 px-2 mobile-text-sm text-foreground">
-                            {task.location}
-                          </td>
-                          <td className="py-2 px-2 mobile-text-sm text-foreground">
-                            <Badge
+                          </div>
+                          {/* RIGHT SECTION – ACTIONS */}
+                          <div className="flex items-center gap-3">
+                            <Button
                               variant="outline"
-                              className={getPriorityColor(task.priority)}
+                              size="sm"
+                              onClick={() => handleTaskAction(task, "view")}
                             >
-                              {task.priority.toUpperCase()}
-                            </Badge>
-                          </td>
-                          <td className="py-2 px-2 mobile-text-sm text-foreground">
-                            <Badge
-                              variant="outline"
-                              className={getStatusColor(task.status)}
-                            >
-                              {task.status.replace("_", " ").toUpperCase()}
-                            </Badge>
-                          </td>
-                          <td className="py-2 px-2 mobile-text-sm text-foreground">
-                            {new Date(task.deadline).toLocaleDateString()}
-                          </td>
-                          <td className="py-2 px-2 mobile-text-sm text-foreground">
-                            <div className="mobile-action-buttons">
+                              <Eye className="h-3 w-3 mr-1" />
+                              View
+                            </Button>
+                            {task.status !== "completed" && (
                               <Button
-                                variant="outline"
                                 size="sm"
-                                onClick={() => handleTaskAction(task, "view")}
+                                onClick={() => handleTaskAction(task, "update")}
                               >
-                                <Eye className="h-3 w-3 mr-1" />
-                                View
+                                {task.status === "assigned" ? (
+                                  <>
+                                    <PlayCircle className="h-3 w-3 mr-1" />
+                                    Start
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="h-3 w-3 mr-1" />
+                                    Update
+                                  </>
+                                )}
                               </Button>
-                              {task.status !== "completed" && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleTaskAction(task, "update")}
-                                >
-                                  {task.status === "assigned" ? (
-                                    <>
-                                      <PlayCircle className="h-3 w-3 mr-1" />
-                                      Start
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Upload className="h-3 w-3 mr-1" />
-                                      Update
-                                    </>
-                                  )}
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -785,7 +794,7 @@ const TechnicianDashboard = () => {
 
         {/* Update Status Dialog */}
         <Dialog open={isUpdateStatusOpen} onOpenChange={setIsUpdateStatusOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogContent className=" sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Update Task Status</DialogTitle>
               <DialogDescription>
@@ -809,29 +818,29 @@ const TechnicianDashboard = () => {
               <div className="space-y-2">
                 <Label htmlFor="mob-No">Client Mobile No </Label>
                 <div className="flex">
-                <Input
-                  id="mob-No"
-                  placeholder="Client Mobile Number  "
-                />
-                 <Button variant="outline" className="mx-2">Generate OTP</Button>
-                 </div>
+                  <Input
+                    id="mob-No"
+                    placeholder="Client Mobile Number  "
+                  />
+                  <Button variant="outline" className="mx-2">Generate OTP</Button>
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="mob-No">OTP Verification</Label>
                 <div className="flex ">
-                 <InputOTP
-                 maxLength={6}
-                value={otp}
-                onChange={setOtp}>
-                  <InputOTPGroup>
-                    {[0,1,2,3,4,5].map((i)=>(
-                      <InputOTPSlot key={i} index={i} className="mx-1 rounded-md shadow-md">
-                      
-                      </InputOTPSlot>
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
+                  <InputOTP
+                    maxLength={6}
+                    value={otp}
+                    onChange={setOtp}>
+                    <InputOTPGroup>
+                      {[0, 1, 2, 3, 4, 5].map((i) => (
+                        <InputOTPSlot key={i} index={i} className="mx-1 rounded-md shadow-md">
+
+                        </InputOTPSlot>
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
                   <Button variant="outline" className="mx-2 bg-green-500" >Validate OTP</Button>
                 </div>
               </div>

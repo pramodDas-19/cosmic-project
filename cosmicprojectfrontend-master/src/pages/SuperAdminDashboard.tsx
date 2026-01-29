@@ -1393,7 +1393,7 @@ const SuperAdminDashboard = () => {
                                     className="w-4 h-4"
                                   />
                                 </td>
-                                <td className="border-b border-gray-200 py-3 mobile-text-sm">{task.title}</td>
+                                <td className="border-b border-gray-200 py-3 mobile-text-sm text-cyan-300 ">{task.title}</td>
                                 <td className="border-b border-gray-200 py-3 mobile-text-sm">
                                   <Badge variant="outline" className="capitalize">
                                     {task.status}
@@ -1408,7 +1408,7 @@ const SuperAdminDashboard = () => {
                                             href={file.url || `${FILE_BASE_URL}/${file.path}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-800 underline text-xs"
+                                            className=" hover:text-blue-800 underline text-xs"
                                           >
                                             {file.originalName || file.name || file.filename || 'Attachment'}
                                           </a>
@@ -1416,10 +1416,10 @@ const SuperAdminDashboard = () => {
                                       ))}
                                     </ul>
                                   ) : (
-                                    <span className="text-gray-500 text-xs">No attachments</span>
+                                    <span className=" text-xs">No attachments</span>
                                   )}
                                 </td>
-                                <td className="border-b border-gray-200 py-3 mobile-text-sm text-gray-600">
+                                <td className="border-b border-gray-200 py-3 mobile-text-sm ">
                                   {task.description || '-'}
                                 </td>
                               </tr>
@@ -1452,7 +1452,7 @@ const SuperAdminDashboard = () => {
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between mb-2">
-                                <h4 className="mobile-text-base font-medium text-gray-900 truncate">
+                                <h4 className="mobile-text-base font-medium  truncate">
                                   {task.title}
                                 </h4>
                                 <Badge variant="outline" className="capitalize mobile-text-xs">
@@ -1462,14 +1462,14 @@ const SuperAdminDashboard = () => {
 
                               <div className="space-y-2">
                                 <div>
-                                  <span className="mobile-text-xs font-medium text-gray-500">Description:</span>
-                                  <p className="mobile-text-sm text-gray-700 mt-1">
+                                  <span className="mobile-text-xs font-medium">Description:</span>
+                                  <p className="mobile-text-sm  mt-1">
                                     {task.description || 'No description available'}
                                   </p>
                                 </div>
 
                                 <div>
-                                  <span className="mobile-text-xs font-medium text-gray-500">Attachments:</span>
+                                  <span className="mobile-text-xs font-medium">Attachments:</span>
                                   {(task.files && task.files.length > 0) ? (
                                     <div className="mt-1 space-y-1">
                                       {task.files.map((file, idx) => (
@@ -1478,7 +1478,7 @@ const SuperAdminDashboard = () => {
                                             href={file.url || `${FILE_BASE_URL}/${file.path}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="mobile-text-xs text-blue-600 hover:text-blue-800 underline break-all"
+                                            className="mobile-text-xs  hover:text-blue-800 underline break-all"
                                           >
                                             {file.originalName || file.name || file.filename || 'Attachment'}
                                           </a>
@@ -1486,7 +1486,7 @@ const SuperAdminDashboard = () => {
                                       ))}
                                     </div>
                                   ) : (
-                                    <p className="mobile-text-xs text-gray-500 mt-1">No attachments</p>
+                                    <p className="mobile-text-xs mt-1">No attachments</p>
                                   )}
                                 </div>
                               </div>
@@ -1655,7 +1655,7 @@ const SuperAdminDashboard = () => {
                   id="current-technician"
                   value={taskToReassign.assignedTo?.name || "Unassigned"}
                   readOnly
-                  className="bg-gray-50 cursor-not-allowed"
+                  className=" cursor-not-allowed"
                 />
               </div>
 
