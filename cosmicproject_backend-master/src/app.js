@@ -1,18 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
-require("dotenv").config();
 const path = require("path");
+require("dotenv").config();
 
 const logger = require("./utils/logger");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
 
-// Import routes
+// routes
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
 const notificationRoutes = require("./routes/notifications");
-const superAdminRoutes = require(path.join(__dirname, "routes", "superAdmin"));
+const superAdminRoutes = require("./routes/superAdmin");
 const managerRoutes = require("./routes/manager");
 const technicianRoutes = require("./routes/technician");
 const reportsRoutes = require("./routes/reports");
@@ -21,120 +20,110 @@ const profileRoutes = require("./routes/profile");
 const projectsRoutes = require("./routes/projects");
 const filesRoutes = require("./routes/files");
 const tasksRoutes = require("./routes/tasks");
+const otpRoutes = require("./controllers/otpRoutes");
 
 const app = express();
 
-// Trust proxy for correct IP address extraction
-app.set('trust proxy', true);
+/* =========================
+   BASIC CONFIG
+========================= */
+app.set("trust proxy", true);
 
-// Security middleware
-app.use(helmet());
-
-// CORS configuration - Allow all origins for now to ensure frontend works
 const corsOptions = {
-  origin: true, // Allow all origins
+  origin: process.env.NODE_ENV === 'production' 
+    ? [
+        process.env.FRONTEND_URL || 'https://cosmic-project.onrender.com',
+        'https://cosmic-project.onrender.com',
+        'https://your-admin-domain.com' // Add your admin domain if needed
+      ]
+    : true, // Allow all origins in development
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  optionsSuccessStatus: 200
 };
 
-console.log("CORS: Allowing all origins for production");
+/* =========================
+   MIDDLEWARE
+========================= */
 app.use(cors(corsOptions));
+app.use(securityHeaders);
+app.use(compressionMiddleware);
+app.use(helmet());
 
-// Rate limiting
-// const limiter = rateLimit({
-//   windowMs: (process.env.RATE_LIMIT_WINDOW || 15) * 60 * 1000, // 15 minutes
-//   max: process.env.RATE_LIMIT_MAX || 100,
-//   message: {
-//     error: "Too many requests from this IP, please try again later.",
-//   },
-// });
-
-// app.use("/api/", limiter);
-
-// Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Logging middleware
+/* =========================
+   LOGGER
+========================= */
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.path} - ${req.ip}`);
-  // Log all API requests for debugging
-  if (req.path.startsWith('/api/')) {
-    console.log(`📥 ${req.method} ${req.originalUrl || req.path}`);
-  }
+  logger.info(`${req.method} ${req.originalUrl} - ${req.ip}`);
+  console.log(`📥 ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// Health check endpoint
+/* =========================
+   HEALTH CHECK
+========================= */
 app.get("/api/health", (req, res) => {
   res.status(200).json({
-    status: "success",
-    message: "Server is running successfully",
-    timestamp: new Date().toISOString(),
+    status: "ok",
+    message: "Server running 🚀",
+    time: new Date().toISOString(),
   });
 });
 
-// API routes
+/* =========================
+   API ROUTES
+========================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/otp", otpRoutes); // ✅ OTP FIXED
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/superadmin", superAdminRoutes);
 app.use("/api/manager", managerRoutes);
 app.use("/api/technician", technicianRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/seed", seedRoutes);
-
-// Special CORS middleware for profile pictures
-app.use("/api/profile/picture", (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Max-Age', '86400');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
-});
-
 app.use("/api/profile", profileRoutes);
 app.use("/api/projects", projectsRoutes);
 app.use("/api/files", filesRoutes);
 app.use("/api/tasks", tasksRoutes);
 
-// CORS middleware for uploads directory
-app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Max-Age', '86400'); // 24 hours
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+/* =========================
+   UPLOADS
+========================= */
+app.use("/uploads", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
   }
   next();
 });
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-// Root route to handle GET /
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+/* =========================
+   ROOT
+========================= */
 app.get("/", (req, res) => {
-  res.status(200).json({
-    message: "Backend is running successfully 🚀",
-    status: "ok",
+  res.json({
+    message: "Backend running successfully 🚀",
     environment: process.env.NODE_ENV || "development",
   });
 });
-// Handle favicon requests to avoid errors in logs
-app.get("/favicon.ico", (req, res) => res.status(204));
 
-// Handle 404 errors
+// favicon fix
+app.get("/favicon.ico", (req, res) => res.sendStatus(204));
+
+/* =========================
+   ERROR HANDLERS
+========================= */
 app.use(notFound);
-
-// Global error handler (must be last)
 app.use(errorHandler);
 
 module.exports = app;
