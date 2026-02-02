@@ -47,8 +47,6 @@ const corsOptions = {
    MIDDLEWARE
 ========================= */
 app.use(cors(corsOptions));
-app.use(securityHeaders);
-app.use(compressionMiddleware);
 app.use(helmet());
 
 app.use(express.json({ limit: "10mb" }));
