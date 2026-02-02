@@ -10,7 +10,8 @@ const initializeSocket = (server) => {
       origin: process.env.ALLOWED_ORIGINS?.split(',') || [
         'http://localhost:3000', 
         'http://localhost:5000',
-        'https://cosmic-projectfrontend.vercel.app'
+        'https://cosmic-project.onrender.com',
+        
       ],
       methods: ['GET', 'POST'],
       credentials: true,
