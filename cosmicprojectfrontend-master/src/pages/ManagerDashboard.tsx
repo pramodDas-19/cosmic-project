@@ -621,6 +621,54 @@ const ManagerDashboard = () => {
     (project) => project._id === selectedProjectId
   );
 
+  // Autofill task form when a project is selected
+  useEffect(() => {
+    if (!selectedProjectId) {
+      // If project deselected, do not override existing inputs
+      return;
+    }
+
+    const proj = assignedProjects.find((p) => p._id === selectedProjectId);
+    if (!proj) return;
+
+    // Keep selectedProject in sync (some parts of the component use it)
+    setSelectedProject(selectedProjectId);
+
+    // Prefill title if empty
+    if (!taskTitle || taskTitle.trim() === "") {
+      setTaskTitle(`${proj.siteName} - Task`);
+    }
+
+    // Prefill description if empty
+    if (!taskDescription || taskDescription.trim() === "") {
+      const clientInfo = proj.clientName ? `Client: ${proj.clientName}` : "";
+      const addressInfo = proj.siteAddress || proj.address || "";
+      const addressLine = addressInfo ? `\nAddress: ${addressInfo}` : "";
+      setTaskDescription(`${clientInfo}${addressLine}`.trim());
+    }
+
+    // Prefill location link if present
+    if (proj.mapLink) {
+      setTaskLocationLink(proj.mapLink);
+    }
+
+    // Automatically add project files to the task (marked as project files)
+    if (proj.files && proj.files.length > 0) {
+      const projectFiles = proj.files.map((f) => ({
+        name: f.originalName || f.filename || "Project File",
+        size: f.size || 0,
+        isProjectFile: true,
+        projectFilePath: f.path || f.filename,
+      }));
+
+      setTaskFiles((prev) => {
+        const existingPaths = new Set(prev.filter(p => p.isProjectFile).map(p => p.projectFilePath));
+        const newOnes = projectFiles.filter(p => !existingPaths.has(p.projectFilePath));
+        return [...prev, ...newOnes];
+      });
+    }
+  }, [selectedProjectId, assignedProjects]);
+
 
   return (
     <DashboardLayout
