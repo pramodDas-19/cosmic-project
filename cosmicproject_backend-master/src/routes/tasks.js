@@ -230,7 +230,7 @@ router.post('/',
           try {
             const clientMobile = (populatedTask.project && populatedTask.project.clientMobile) || foundProject.clientMobile;
             if (clientMobile) {
-              const smsMessage = `Our technician has visited your site. If you are satisfied with the work, please share this OTP with the technician to mark the task as completed. OTP: by cosmic Solutions ${otpCode}`;
+              const smsMessage = `Our technician will visit your site. If you are satisfied with the work, please share this OTP with the technician to mark the task as completed. OTP: ${otpCode}`;
               await smsService.sendMessage(clientMobile, smsMessage);
             } else {
               console.warn('No client mobile number available to send OTP SMS');
@@ -281,6 +281,11 @@ router.post('/:taskId/verify-otp',
       const task = await TaskModel.findById(taskId).select('+otpHash');
       if (!task) {
         return res.status(404).json({ status: 'error', message: 'Task not found' });
+      }
+
+      // Ensure task is assigned to this technician
+      if (!task.assignedTo || task.assignedTo.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ status: 'error', message: 'You are not authorized to validate OTP for this task' });
       }
 
       // Ensure not already completed

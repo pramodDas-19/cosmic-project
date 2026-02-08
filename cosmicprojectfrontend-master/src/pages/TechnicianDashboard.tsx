@@ -107,12 +107,8 @@ const TechnicianDashboard = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
 
   // OTP States
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
-  const [otpMessage, setOtpMessage] = useState("");
-  const [otpExpiry, setOtpExpiry] = useState<number | null>(null);
 
   const { socket } = useSocket();
 
@@ -261,27 +257,6 @@ const TechnicianDashboard = () => {
   }, [socket]);
 
   // OTP Expiry Timer
-  useEffect(() => {
-    if (!otpExpiry || otpExpiry <= 0) {
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setOtpExpiry((prev) => {
-        if (prev && prev > 0) {
-          return prev - 1;
-        } else {
-          // OTP expired
-          setOtpSent(false);
-          setOtp("");
-          toast.error("OTP has expired. Please request a new one.");
-          return null;
-        }
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [otpExpiry]);
 
   // Technician dashboard stats - calculated from actual tasks
   const assignedTasksCount = allTasks.filter(
@@ -442,81 +417,29 @@ const TechnicianDashboard = () => {
   };
 
   // OTP Handlers
-  const handleGenerateOtp = async () => {
-    try {
-      setOtpError("");
-      setOtpMessage("");
-      setOtpLoading(true);
-
-      // Validate mobile number
-      const cleanNumber = mobileNumber.replace(/\D/g, "");
-      if (cleanNumber.length < 10) {
-        throw new Error("Please enter a valid 10-digit mobile number");
-      }
-
-      const response = await fetch(`${API_BASE_URL}/otp/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mobileNumber: cleanNumber,
-          name: userProfile?.name,
-          email: userProfile?.email,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to send OTP");
-      }
-
-      if (data.status === "success") {
-        setOtpSent(true);
-        setOtpMessage("OTP sent successfully! Valid for 5 minutes.");
-        toast.success("OTP sent to your mobile number");
-        
-        // Set expiry timer (5 minutes)
-        const expiryTime = new Date(data.data.expiresAt).getTime() - Date.now();
-        setOtpExpiry(Math.ceil(expiryTime / 1000));
-      } else {
-        throw new Error(data.message || "Failed to send OTP");
-      }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Failed to generate OTP";
-      setOtpError(errorMsg);
-      toast.error(errorMsg);
-    } finally {
-      setOtpLoading(false);
-    }
-  };
 
   const handleValidateOtp = async () => {
     try {
       setOtpError("");
-      setOtpMessage("");
 
       if (!otp || otp.length !== 6) {
         throw new Error("Please enter a valid 6-digit OTP");
       }
 
-      if (!mobileNumber) {
-        throw new Error("Please enter a mobile number first");
+      if (!selectedTask || !selectedTask._id) {
+        throw new Error("No task selected");
       }
 
       setOtpLoading(true);
 
-      const cleanNumber = mobileNumber.replace(/\D/g, "");
-      const response = await fetch(`${API_BASE_URL}/otp/verify`, {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_BASE_URL}/tasks/${selectedTask._id}/verify-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          mobileNumber: cleanNumber,
-          otp: otp,
-        }),
+        body: JSON.stringify({ otp: otp }),
       });
 
       const data = await response.json();
@@ -526,65 +449,16 @@ const TechnicianDashboard = () => {
       }
 
       if (data.status === "success") {
-        toast.success("OTP verified successfully!");
-        setOtpMessage("✅ OTP verified successfully!");
-        
-        // Reset OTP states
-        setTimeout(() => {
-          setOtp("");
-          setMobileNumber("");
-          setOtpSent(false);
-          setOtpMessage("");
-          setOtpExpiry(null);
-        }, 2000);
+        toast.success("OTP verified and task marked completed!");
+        // Update local task list
+        setAllTasks((prev) => prev.map(t => t._id === data.data._id ? data.data : t));
+        // Close dialog
+        setIsUpdateStatusOpen(false);
       } else {
         throw new Error(data.message || "OTP verification failed");
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to verify OTP";
-      setOtpError(errorMsg);
-      toast.error(errorMsg);
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    try {
-      setOtpError("");
-      setOtpMessage("");
-      setOtpLoading(true);
-
-      const cleanNumber = mobileNumber.replace(/\D/g, "");
-      const response = await fetch(`${API_BASE_URL}/otp/resend`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mobileNumber: cleanNumber,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to resend OTP");
-      }
-
-      if (data.status === "success") {
-        setOtpMessage("OTP resent successfully! Valid for 5 minutes.");
-        toast.success("New OTP sent to your mobile number");
-        
-        // Reset OTP input
-        setOtp("");
-        
-        // Set expiry timer
-        const expiryTime = new Date(data.data.expiresAt).getTime() - Date.now();
-        setOtpExpiry(Math.ceil(expiryTime / 1000));
-      }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Failed to resend OTP";
       setOtpError(errorMsg);
       toast.error(errorMsg);
     } finally {
@@ -998,99 +872,43 @@ const TechnicianDashboard = () => {
                 </Select>
               </div>
 
-              {/* OTP Section */}
+              {/* OTP Section (Technician input only) */}
               <div className="space-y-4 border rounded-lg p-4 bg-blue-50">
                 <div className="flex items-center gap-2">
                   <Phone className="h-5 w-5 text-blue-600" />
-                  <h3 className="font-semibold text-blue-900">Mobile Verification</h3>
+                  <h3 className="font-semibold text-blue-900">Client OTP Verification</h3>
                 </div>
 
-                {/* Mobile Number Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="mob-No">Client Mobile Number *</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="mob-No"
-                      placeholder="10-digit mobile number"
-                      value={mobileNumber}
-                      onChange={(e) => {
-                        // Allow only digits and basic formatting
-                        const cleaned = e.target.value.replace(/\D/g, "");
-                        setMobileNumber(cleaned.slice(0, 10));
-                      }}
-                      disabled={otpSent || otpLoading}
-                      maxLength={10}
-                      type="tel"
-                      className="flex-1"
-                    />
+                  <Label htmlFor="otp-input">Enter OTP provided by client *</Label>
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <InputOTP
+                        maxLength={6}
+                        value={otp}
+                        onChange={setOtp}
+                        disabled={otpLoading}
+                      >
+                        <InputOTPGroup>
+                          {[0, 1, 2, 3, 4, 5].map((i) => (
+                            <InputOTPSlot
+                              key={i}
+                              index={i}
+                              className="mx-1 rounded-md shadow-md border-2 border-blue-300 focus:border-blue-600"
+                            />
+                          ))}
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </div>
                     <Button
-                      onClick={handleGenerateOtp}
-                      disabled={!mobileNumber || mobileNumber.length !== 10 || otpSent || otpLoading}
-                      className="whitespace-nowrap"
+                      onClick={handleValidateOtp}
+                      disabled={otp.length !== 6 || otpLoading}
+                      className="bg-green-600 hover:bg-green-700 whitespace-nowrap"
                     >
-                      {otpLoading ? "Sending..." : "Generate OTP"}
+                      {otpLoading ? "Verifying..." : "Validate OTP"}
                     </Button>
                   </div>
                 </div>
-
-                {/* OTP Input */}
-                {otpSent && (
-                  <div className="space-y-2">
-                    <Label htmlFor="otp-input">OTP Verification *</Label>
-                    <div className="flex gap-2 items-end">
-                      <div className="flex-1">
-                        <InputOTP
-                          maxLength={6}
-                          value={otp}
-                          onChange={setOtp}
-                          disabled={otpLoading}
-                        >
-                          <InputOTPGroup>
-                            {[0, 1, 2, 3, 4, 5].map((i) => (
-                              <InputOTPSlot
-                                key={i}
-                                index={i}
-                                className="mx-1 rounded-md shadow-md border-2 border-blue-300 focus:border-blue-600"
-                              />
-                            ))}
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </div>
-                      <Button
-                        onClick={handleValidateOtp}
-                        disabled={otp.length !== 6 || otpLoading}
-                        className="bg-green-600 hover:bg-green-700 whitespace-nowrap"
-                      >
-                        {otpLoading ? "Verifying..." : "Validate OTP"}
-                      </Button>
-                    </div>
-                    
-                    {/* Resend OTP */}
-                    <div className="flex justify-between items-center text-sm">
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={handleResendOtp}
-                        disabled={otpLoading}
-                        className="text-blue-600 hover:text-blue-800 p-0"
-                      >
-                        Resend OTP
-                      </Button>
-                      {otpExpiry && (
-                        <span className={otpExpiry < 60 ? "text-red-600 font-semibold" : "text-gray-600"}>
-                          Expires in: {Math.floor(otpExpiry / 60)}:{(otpExpiry % 60).toString().padStart(2, "0")}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Status Messages */}
-                {otpMessage && (
-                  <div className="p-3 bg-green-100 border border-green-400 rounded-lg text-green-800 text-sm">
-                    {otpMessage}
-                  </div>
-                )}
 
                 {otpError && (
                   <div className="p-3 bg-red-100 border border-red-400 rounded-lg text-red-800 text-sm">

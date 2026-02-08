@@ -20,7 +20,8 @@ const profileRoutes = require("./routes/profile");
 const projectsRoutes = require("./routes/projects");
 const filesRoutes = require("./routes/files");
 const tasksRoutes = require("./routes/tasks");
-const otpRoutes = require("./controllers/otpRoutes");
+// OTP routes disabled — OTPs are generated only at manager task assignment
+// const otpRoutes = require("./controllers/otpRoutes");
 
 const app = express();
 
@@ -77,7 +78,7 @@ app.get("/api/health", (req, res) => {
 ========================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/otp", otpRoutes); // ✅ OTP FIXED
+// app.use("/api/otp", otpRoutes); // OTP routes disabled
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/superadmin", superAdminRoutes);
 app.use("/api/manager", managerRoutes);
