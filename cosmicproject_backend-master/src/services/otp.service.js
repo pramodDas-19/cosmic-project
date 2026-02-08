@@ -3,6 +3,7 @@
 const admin = require("../config/firebase");
 const OTP = require("../models/OTP");
 const logger = require("../utils/logger");
+const smsService = require("./sms.service");
 
 /**
  * Generate a random 6-digit OTP
@@ -68,11 +69,17 @@ exports.sendOtp = async (mobileNumber) => {
     logger.info(`OTP generated for mobile: ${cleanNumber}`);
     console.log(`✅ OTP for ${cleanNumber}: ${otp} (Expires: ${expiryTime})`);
 
-    // In production, send via SMS using Firebase, Twilio, AWS SNS, etc.
-    // For now, we'll log it for development/testing
-    if (process.env.NODE_ENV === "production") {
-      // TODO: Integrate Twilio or Firebase Cloud Messaging
-      // await sendOtpViaSMS(formattedNumber, otp);
+    // Send OTP via SMS (production and development)
+    try {
+      const smsResult = await sendOtpViaSMS(formattedNumber, otp);
+      if (smsResult.success) {
+        logger.info(`✅ OTP SMS sent to ${formattedNumber} (SMS ID: ${smsResult.smsId})`);
+      } else {
+        logger.warn(`⚠️ OTP SMS sending failed: ${smsResult.message}`);
+      }
+    } catch (smsError) {
+      logger.error(`Error sending OTP SMS: ${smsError.message}`);
+      // Don't fail OTP generation if SMS fails - OTP is still valid for app/console
     }
 
     return {
@@ -207,28 +214,22 @@ exports.clearOtp = async (mobileNumber) => {
 };
 
 /**
- * Send OTP via SMS (implementation for Twilio)
- * Placeholder for actual SMS implementation
+ * Send OTP via SMS using Twilio service
+ * @param {string} phoneNumber - Phone number in format +91xxxxxxxxxx
+ * @param {string} otp - 6-digit OTP code
+ * @returns {Promise<Object>} - SMS result object
  */
 const sendOtpViaSMS = async (phoneNumber, otp) => {
   try {
-    // TODO: Implement Twilio integration
-    // const client = require("twilio")(
-    //   process.env.TWILIO_ACCOUNT_SID,
-    //   process.env.TWILIO_AUTH_TOKEN
-    // );
-    //
-    // await client.messages.create({
-    //   body: `Your OTP is: ${otp}. Valid for 5 minutes.`,
-    //   from: process.env.TWILIO_PHONE_NUMBER,
-    //   to: phoneNumber,
-    // });
-
-    logger.info(`SMS sent to ${phoneNumber}`);
-    return { success: true };
+    // Use SMS service to send via Twilio
+    const result = await smsService.sendOTP(phoneNumber, otp);
+    return result;
   } catch (error) {
-    logger.error(`Error sending SMS: ${error.message}`);
-    throw error;
+    logger.error(`Error sending OTP SMS: ${error.message}`);
+    return {
+      success: false,
+      message: `Failed to send OTP SMS: ${error.message}`,
+    };
   }
 };
 
