@@ -5,6 +5,8 @@ const Task = require('../models/Task');
 const Project = require('../models/Project');
 const User = require('../models/User');
 const notificationService = require('../services/notificationService');
+const crypto = require('crypto');
+const smsService = require('../services/sms.service');
 
 const router = express.Router();
 
@@ -201,6 +203,12 @@ router.post('/',
         priority,
         deadline
       });
+
+      // Generate 6-digit OTP, hash it and store hashed value on the task (no expiry)
+      const otpCode = (Math.floor(100000 + Math.random() * 900000)).toString();
+      const otpHash = crypto.createHash('sha256').update(otpCode).digest('hex');
+      newTask.otpHash = otpHash;
+
       await newTask.save();
 
       // Add task to project's tasks array
@@ -208,8 +216,9 @@ router.post('/',
       await foundProject.save();
 
       // Populate task for notifications
-      const populatedTask = await Task.findById(newTask._id)
-        .populate('project', 'siteName clientName')
+      // Populate task but do not expose otpHash
+      const populatedTask = await Task.findById(newTask._id).select('-otpHash')
+        .populate('project', 'siteName clientName clientMobile')
         .populate('assignedTo', 'name email')
         .populate('assignedBy', 'name email');
 
@@ -217,6 +226,18 @@ router.post('/',
       try {
         await notificationService.notifyTaskCreated(populatedTask, req.user, technician);
         console.log('✅ Task creation notifications sent successfully');
+          // Send SMS to client/customer with OTP
+          try {
+            const clientMobile = (populatedTask.project && populatedTask.project.clientMobile) || foundProject.clientMobile;
+            if (clientMobile) {
+              const smsMessage = `Our technician has visited your site. If you are satisfied with the work, please share this OTP with the technician to mark the task as completed. OTP: by cosmic Solutions ${otpCode}`;
+              await smsService.sendMessage(clientMobile, smsMessage);
+            } else {
+              console.warn('No client mobile number available to send OTP SMS');
+            }
+          } catch (smsError) {
+            console.error('❌ Failed to send OTP SMS:', smsError);
+          }
         
         // Also emit socket event for real-time updates
         if (global.socketServer) {
@@ -229,7 +250,7 @@ router.post('/',
 
       res.status(201).json({
         status: 'success',
-        data: newTask,
+        data: populatedTask,
         message: 'Task created and assigned successfully'
       });
     } catch (error) {
@@ -239,6 +260,78 @@ router.post('/',
         message: 'Failed to create task',
         error: error.message
       });
+    }
+  }
+);
+
+// Technician submits OTP to mark task as completed
+router.post('/:taskId/verify-otp',
+  protect,
+  authorize('technician'),
+  async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const { otp } = req.body;
+
+      if (!otp) {
+        return res.status(400).json({ status: 'error', message: 'OTP is required' });
+      }
+
+      const TaskModel = Task;
+      const task = await TaskModel.findById(taskId).select('+otpHash');
+      if (!task) {
+        return res.status(404).json({ status: 'error', message: 'Task not found' });
+      }
+
+      // Ensure not already completed
+      const statusLower = (task.status || '').toString().toLowerCase();
+      if (statusLower === 'completed') {
+        return res.status(400).json({ status: 'error', message: 'Task is already completed' });
+      }
+
+      if (!task.otpHash) {
+        return res.status(400).json({ status: 'error', message: 'No OTP is associated with this task or it has already been used' });
+      }
+
+      const providedHash = crypto.createHash('sha256').update(otp.toString()).digest('hex');
+      if (providedHash !== task.otpHash) {
+        return res.status(400).json({ status: 'error', message: 'Invalid OTP. Please check and try again.' });
+      }
+
+      // OTP is valid - mark task completed and save details
+      task.status = 'completed';
+      task.completedAt = new Date();
+      task.completedBy = req.user._id;
+      // Permanently invalidate OTP by removing hash
+      task.otpHash = undefined;
+
+      await task.save();
+
+      // Populate for notifications
+      const completedTask = await TaskModel.findById(task._id)
+        .populate('assignedTo', 'name email')
+        .populate('assignedBy', 'name email')
+        .populate('project', 'siteName clientName');
+
+      try {
+        await notificationService.notifyTaskCompleted(completedTask, req.user);
+      } catch (notifyErr) {
+        console.error('Failed to send completion notifications:', notifyErr);
+      }
+
+      // Emit socket event
+      if (global.socketServer) {
+        try {
+          global.socketServer.emitTaskCompleted(completedTask, req.user);
+        } catch (socketErr) {
+          console.error('Error emitting task completed socket event:', socketErr);
+        }
+      }
+
+      return res.json({ status: 'success', message: 'OTP verified. Task marked as completed.', data: completedTask });
+    } catch (err) {
+      console.error('Error verifying OTP:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to verify OTP', error: err.message });
     }
   }
 );

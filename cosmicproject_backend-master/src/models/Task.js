@@ -51,6 +51,15 @@ const taskSchema = new mongoose.Schema({
   completedAt: {
     type: Date
   },
+  completedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  // Hashed OTP for customer confirmation (SHA-256)
+  otpHash: {
+    type: String,
+    select: false,
+  },
   // Progress tracking
   progress: {
     type: Number,
