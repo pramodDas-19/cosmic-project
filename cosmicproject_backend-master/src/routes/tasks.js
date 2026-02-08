@@ -231,12 +231,18 @@ router.post('/',
             const clientMobile = (populatedTask.project && populatedTask.project.clientMobile) || foundProject.clientMobile;
             if (clientMobile) {
               const smsMessage = `Our technician will visit your site. If you are satisfied with the work, please share this OTP with the technician to mark the task as completed. OTP: ${otpCode}`;
-              await smsService.sendMessage(clientMobile, smsMessage);
+              console.log(`📱 Sending OTP SMS to: ${clientMobile}`);
+              const smsResult = await smsService.sendMessage(clientMobile, smsMessage);
+              if (smsResult.success) {
+                console.log(`✅ OTP SMS sent successfully (SMS ID: ${smsResult.smsId})`);
+              } else {
+                console.warn(`⚠️ SMS sending failed: ${smsResult.message}`);
+              }
             } else {
-              console.warn('No client mobile number available to send OTP SMS');
+              console.warn('⚠️ No client mobile number available - OTP SMS not sent. Ensure project.clientMobile is set.');
             }
           } catch (smsError) {
-            console.error('❌ Failed to send OTP SMS:', smsError);
+            console.error('❌ Error during OTP SMS sending:', smsError.message);
           }
         
         // Also emit socket event for real-time updates

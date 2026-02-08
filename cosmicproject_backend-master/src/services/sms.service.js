@@ -13,10 +13,19 @@ const initializeTwilio = () => {
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const phoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
-  if (!accountSid || !authToken) {
-    logger.warn("⚠️ Twilio credentials not configured. SMS sending disabled.");
-    logger.warn("Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in your environment variables.");
+  if (!accountSid || !authToken || !phoneNumber) {
+    console.log(`\n❌ TWILIO SMS CONFIGURATION ERROR`);
+    console.log(`   TWILIO_ACCOUNT_SID: ${accountSid ? '✓ Set' : '✗ NOT SET'}`);
+    console.log(`   TWILIO_AUTH_TOKEN: ${authToken ? '✓ Set' : '✗ NOT SET'}`);
+    console.log(`   TWILIO_PHONE_NUMBER: ${phoneNumber ? '✓ Set' : '✗ NOT SET'}`);
+    console.log(`\n   📝 To enable SMS, add these to your .env file:`);
+    console.log(`      TWILIO_ACCOUNT_SID=your_account_sid`);
+    console.log(`      TWILIO_AUTH_TOKEN=your_auth_token`);
+    console.log(`      TWILIO_PHONE_NUMBER=+1234567890`);
+    console.log(`\n   Get Twilio credentials from: https://console.twilio.com\n`);
+    logger.warn("⚠️ Twilio SMS service disabled - credentials not configured");
     isTwilioConfigured = true; // Mark as attempted to prevent repeated logs
     return;
   }

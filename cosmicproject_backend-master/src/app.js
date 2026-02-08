@@ -73,6 +73,25 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// SMS Service Status Check
+app.get("/api/health/sms", (req, res) => {
+  const smsService = require("./services/sms.service");
+  const status = smsService.getStatus();
+  res.status(200).json({
+    status: "ok",
+    sms: {
+      configured: status.configured,
+      hasAccountSid: status.hasAccountSid,
+      hasAuthToken: status.hasAuthToken,
+      hasPhoneNumber: status.hasPhoneNumber,
+      twilioPhoneNumber: status.twilioPhoneNumber,
+      message: status.configured 
+        ? "✅ SMS is configured and ready to send OTPs"
+        : "⚠️ SMS is NOT configured. OTPs will not be sent to clients. Add Twilio credentials to .env file."
+    }
+  });
+});
+
 /* =========================
    API ROUTES
 ========================= */
